@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useCurrency } from '../context/CurrencyContext.jsx'
+import { BagIcon, LocationPinIcon, CheckIcon, StoreIcon } from '../components/Icons.jsx'
 import api from '../api.js'
 
 export default function Cart() {
@@ -11,7 +12,7 @@ export default function Cart() {
   const { formatPrice, isDeliverable, city: defaultCity, pincode: defaultPincode } = useCurrency()
   const user = JSON.parse(localStorage.getItem('user') || 'null')
 
-  const [checkoutStep, setCheckoutStep] = useState(1) // 1: Cart Review, 2: Address & Pincode, 3: Payment
+  const [checkoutStep, setCheckoutStep] = useState(1) // 1: Review, 2: Address, 3: Payment
   const [addressForm, setAddressForm] = useState({
     fullName: user?.name || 'Shivashankar',
     phone: user?.phone || '+91 98490 12345',
@@ -27,11 +28,10 @@ export default function Cart() {
   const [error, setError] = useState('')
 
   const serviceable = isDeliverable(addressForm.city, addressForm.pincode)
-
   const updateAddr = (k) => (e) => setAddressForm({ ...addressForm, [k]: e.target.value })
 
   async function handlePlaceOrder(e) {
-    e.preventDefault()
+    if (e) e.preventDefault()
     if (!user) {
       navigate('/login')
       return
@@ -69,91 +69,101 @@ export default function Cart() {
 
   if (cart.length === 0) {
     return (
-      <div className="fk-page-wrapper">
+      <div className="apple-page-wrapper">
         <Navbar />
-        <main className="fk-cart-empty-container">
-          <div className="fk-empty-cart-card">
-            <span className="fk-empty-cart-ico">🛒</span>
-            <h2>Your Shopping Cart is Empty</h2>
-            <p className="muted">Explore verified merchants and add exciting products to your cart.</p>
-            <Link to="/home" className="btn btn-primary btn-lg">
-              Shop Now →
-            </Link>
+        <main style={{ maxWidth: '600px', margin: '80px auto', textAlign: 'center', background: '#ffffff', borderRadius: '24px', padding: '60px 40px', border: '1px solid #e5e5ea', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px', color: '#1d1d1f' }}>
+            <BagIcon size={52} />
           </div>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', letterSpacing: '-0.03em', marginBottom: '8px', color: '#1d1d1f' }}>
+            Your Bag is empty.
+          </h2>
+          <p style={{ fontSize: '15px', color: '#6e6e73', marginBottom: '28px' }}>
+            Explore verified Hyderabad merchant stores and discover amazing products.
+          </p>
+          <Link to="/home" className="apple-btn-pill apple-btn-pill-primary apple-btn-pill-lg">
+            Continue Shopping ›
+          </Link>
         </main>
       </div>
     )
   }
 
   return (
-    <div className="fk-page-wrapper">
+    <div className="apple-page-wrapper">
       <Navbar />
 
-      <main className="fk-cart-container">
-        {/* Flipkart / Amazon Style Checkout Steps Header */}
-        <div className="fk-checkout-progress-bar">
-          <div className={`checkout-step-node ${checkoutStep >= 1 ? 'active' : ''}`}>
-            <span className="step-circle">{checkoutStep > 1 ? '✓' : '1'}</span>
-            <span className="step-label">My Cart ({cart.reduce((s, i) => s + i.quantity, 0)})</span>
-          </div>
-          <div className={`progress-line ${checkoutStep >= 2 ? 'active' : ''}`} />
-          <div className={`checkout-step-node ${checkoutStep >= 2 ? 'active' : ''}`}>
-            <span className="step-circle">{checkoutStep > 2 ? '✓' : '2'}</span>
-            <span className="step-label">Delivery Address & Pincode</span>
-          </div>
-          <div className={`progress-line ${checkoutStep >= 3 ? 'active' : ''}`} />
-          <div className={`checkout-step-node ${checkoutStep >= 3 ? 'active' : ''}`}>
-            <span className="step-circle">3</span>
-            <span className="step-label">Payment & Confirmation</span>
+      <main className="apple-cart-page">
+        {/* Apple Stepper Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', marginBottom: '32px' }}>
+          <h1 className="apple-cart-title" style={{ margin: 0 }}>Review your Bag.</h1>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              className={`apple-tab-btn ${checkoutStep === 1 ? 'active' : ''}`}
+              onClick={() => setCheckoutStep(1)}
+            >
+              1. Review Items
+            </button>
+            <button
+              className={`apple-tab-btn ${checkoutStep === 2 ? 'active' : ''}`}
+              onClick={() => setCheckoutStep(2)}
+            >
+              2. Shipping Address
+            </button>
+            <button
+              className={`apple-tab-btn ${checkoutStep === 3 ? 'active' : ''}`}
+              onClick={() => setCheckoutStep(3)}
+            >
+              3. Payment
+            </button>
           </div>
         </div>
 
-        <div className="fk-cart-grid">
-          {/* Left Column: Multi-Vendor Parcels / Address Form / Payment */}
-          <div className="fk-cart-main-col">
-            {checkoutStep === 1 && (
-              <div className="cart-step-panel">
-                <div className="cart-header-row">
-                  <h2>Shopping Cart ({cart.length} item{cart.length > 1 ? 's' : ''})</h2>
-                  <span className="deliver-to-summary">
-                    📍 Delivering to: <strong>{addressForm.city} {addressForm.pincode}</strong>
-                  </span>
-                </div>
+        {error && (
+          <div className="apple-alert-error" style={{ marginBottom: '24px' }}>
+            {error}
+          </div>
+        )}
 
+        <div className="apple-cart-layout">
+          {/* Left Column: Items or Checkout Forms */}
+          <div>
+            {checkoutStep === 1 && (
+              <div>
                 {groupedByStore.map((group, gIdx) => (
-                  <div key={group.storeId || gIdx} className="fk-parcel-card">
-                    <div className="fk-parcel-header">
-                      <div className="fk-store-dispatch-meta">
-                        <span className="parcel-tag">Parcel {gIdx + 1} of {groupedByStore.length}</span>
-                        <h4>Dispatched directly from: <strong>{group.storeName}</strong></h4>
-                        <span className="store-dist-badge">📍 {group.distanceKm} km away</span>
+                  <div key={group.storeId || gIdx} style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid #e5e5ea', padding: '24px', marginBottom: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', borderBottom: '1px solid #f0f0f4', paddingBottom: '14px', marginBottom: '18px' }}>
+                      <div>
+                        <span style={{ fontSize: '11px', fontWeight: '700', color: '#1d1d1f', letterSpacing: '0.06em' }}>
+                          SHIPMENT {gIdx + 1} OF {groupedByStore.length}
+                        </span>
+                        <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#1d1d1f', margin: '4px 0 2px' }}>
+                          {group.storeName}
+                        </h3>
+                        <span style={{ fontSize: '12.5px', color: '#6e6e73', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <LocationPinIcon size={13} /> {group.distanceKm} km away • Express 3-4 day delivery
+                        </span>
                       </div>
-                      <Link to={`/store/${group.storeId}`} className="fk-view-store">
-                        View Store Catalog →
+                      <Link to={`/store/${group.storeId}`} style={{ fontSize: '13px', color: '#1d1d1f', fontWeight: '500' }}>
+                        Store catalog ›
                       </Link>
                     </div>
 
-                    <div className="fk-parcel-items">
-                      {group.items.map((item) => (
-                        <div key={item.product.id} className="fk-cart-item-row">
-                          <img
-                            src={item.product.imageUrl}
-                            alt={item.product.name}
-                            className="fk-item-thumb"
-                          />
-
-                          <div className="fk-item-details">
-                            <h3 className="fk-item-name">{item.product.name}</h3>
-                            <span className="fk-item-brand">{item.product.brand || 'ShopSphere'}</span>
-                            <div className="fk-item-delivery">
-                              <span>🚚 Express Delivery in 3-4 days to Hyderabad</span>
-                            </div>
-                            <div className="fk-item-price-mobile">
-                              {formatPrice(item.product.price * item.quantity)}
-                            </div>
+                    {group.items.map((item) => (
+                      <div key={item.product.id} className="apple-cart-item-card" style={{ border: 'none', padding: '12px 0', borderBottom: '1px solid #f5f5f7' }}>
+                        <img
+                          src={item.product.imageUrl}
+                          alt={item.product.name}
+                          className="apple-cart-item-img"
+                        />
+                        <div className="apple-cart-item-info">
+                          <div>
+                            <h4 className="apple-cart-item-title">{item.product.name}</h4>
+                            <span className="apple-cart-item-store">{item.product.brand || 'ShopSphere'}</span>
                           </div>
 
-                          <div className="fk-item-qty-block">
+                          <div className="apple-cart-item-price-row">
                             <div className="qty-controls">
                               <button
                                 type="button"
@@ -170,299 +180,210 @@ export default function Cart() {
                                 +
                               </button>
                             </div>
+
+                            <span className="apple-cart-price">
+                              {formatPrice(item.product.price * item.quantity)}
+                            </span>
+
                             <button
                               type="button"
-                              className="fk-remove-link"
+                              className="apple-cart-remove-btn"
                               onClick={() => removeFromCart(item.product.id)}
                             >
                               Remove
                             </button>
                           </div>
-
-                          <div className="fk-item-price-desktop">
-                            <strong className="final-price">{formatPrice(item.product.price * item.quantity)}</strong>
-                            <span className="unit-price">{formatPrice(item.product.price)} each</span>
-                          </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 ))}
-
-                <div className="cart-step-actions">
-                  <Link to="/home" className="btn btn-outline">
-                    ← Continue Shopping
-                  </Link>
-                  <button
-                    className="btn btn-primary btn-lg"
-                    onClick={() => setCheckoutStep(2)}
-                  >
-                    Proceed to Delivery Address →
-                  </button>
-                </div>
               </div>
             )}
 
             {checkoutStep === 2 && (
-              <div className="cart-step-panel">
-                <div className="cart-header-row">
-                  <h2>Select Delivery Address & Verify Location</h2>
-                  <span className="badge-hyderabad">📍 Hyderabad Metro Zone</span>
+              <div style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid #e5e5ea', padding: '32px', boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '6px' }}>Where should we deliver?</h3>
+                <p style={{ fontSize: '13.5px', color: '#6e6e73', marginBottom: '24px' }}>
+                  Enter your address in Greater Hyderabad for multi-vendor direct dispatch.
+                </p>
+
+                <div className="apple-form-group">
+                  <label className="apple-form-label">Full Name</label>
+                  <input
+                    type="text"
+                    className="apple-form-input"
+                    value={addressForm.fullName}
+                    onChange={updateAddr('fullName')}
+                    required
+                  />
                 </div>
 
-                {/* Serviceability / Boundary Feedback Banner */}
-                {serviceable ? (
-                  <div className="fk-serviceable-alert success">
-                    <div className="alert-icon">✓</div>
-                    <div className="alert-body">
-                      <strong>Deliverable Zone Confirmed!</strong>
-                      <p>
-                        Your address in <strong>{addressForm.city} ({addressForm.pincode})</strong> is within our active delivery zone.
-                        Your order will be packed by local stores and delivered within <strong>3-4 days</strong>. Our delivery agent will reach your address safely.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="fk-serviceable-alert warning">
-                    <div className="alert-icon">⚠️</div>
-                    <div className="alert-body">
-                      <strong>Address Outside Active Delivery Boundary</strong>
-                      <p>
-                        ShopSphere currently delivers exclusively within <strong>Greater Hyderabad & Cyberabad Metro boundaries (Pincodes 500001 - 500099)</strong>.
-                        Please enter an address within Hyderabad to confirm your order.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="address-form-grid">
-                  <div className="form-row-2">
-                    <div className="form-group">
-                      <label>Recipient Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        value={addressForm.fullName}
-                        onChange={updateAddr('fullName')}
-                        placeholder="e.g. Shivashankar"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Contact Mobile Number *</label>
-                      <input
-                        type="tel"
-                        required
-                        value={addressForm.phone}
-                        onChange={updateAddr('phone')}
-                        placeholder="+91 98490 12345"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Flat, House No., Building, Street Address *</label>
-                    <textarea
-                      rows={2}
+                <div className="apple-form-row-2">
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">Phone Number</label>
+                    <input
+                      type="tel"
+                      className="apple-form-input"
+                      value={addressForm.phone}
+                      onChange={updateAddr('phone')}
                       required
-                      value={addressForm.street}
-                      onChange={updateAddr('street')}
-                      placeholder="e.g. Flat 402, Cyber Heights, Road No. 36"
                     />
                   </div>
-
-                  <div className="form-row-3">
-                    <div className="form-group">
-                      <label>City / Zone *</label>
-                      <input
-                        type="text"
-                        required
-                        value={addressForm.city}
-                        onChange={updateAddr('city')}
-                        placeholder="Hyderabad"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>State *</label>
-                      <input
-                        type="text"
-                        required
-                        value={addressForm.state}
-                        onChange={updateAddr('state')}
-                        placeholder="Telangana"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>PIN Code (Hyderabad 500xxx) *</label>
-                      <input
-                        type="text"
-                        required
-                        value={addressForm.pincode}
-                        onChange={updateAddr('pincode')}
-                        placeholder="500033"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Landmark (Optional)</label>
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">PIN Code</label>
                     <input
                       type="text"
-                      value={addressForm.landmark}
-                      onChange={updateAddr('landmark')}
-                      placeholder="e.g. Near Cyber Towers / Mindspace IT Park"
+                      className="apple-form-input"
+                      value={addressForm.pincode}
+                      onChange={updateAddr('pincode')}
+                      required
                     />
                   </div>
                 </div>
 
-                <div className="cart-step-actions">
-                  <button className="btn btn-outline" onClick={() => setCheckoutStep(1)}>
-                    ← Back to Cart
-                  </button>
-                  <button
-                    className="btn btn-primary btn-lg"
-                    disabled={!serviceable}
-                    onClick={() => setCheckoutStep(3)}
-                  >
-                    Proceed to Payment Method →
-                  </button>
+                <div className="apple-form-group">
+                  <label className="apple-form-label">Street Address & Flat / Building</label>
+                  <input
+                    type="text"
+                    className="apple-form-input"
+                    value={addressForm.street}
+                    onChange={updateAddr('street')}
+                    required
+                  />
                 </div>
+
+                <div className="apple-form-row-2">
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">City / Region</label>
+                    <input
+                      type="text"
+                      className="apple-form-input"
+                      value={addressForm.city}
+                      onChange={updateAddr('city')}
+                      required
+                    />
+                  </div>
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">Landmark</label>
+                    <input
+                      type="text"
+                      className="apple-form-input"
+                      value={addressForm.landmark}
+                      onChange={updateAddr('landmark')}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="apple-btn-pill apple-btn-pill-primary apple-btn-pill-lg"
+                  style={{ width: '100%', marginTop: '12px' }}
+                  onClick={() => setCheckoutStep(3)}
+                >
+                  Continue to Payment ›
+                </button>
               </div>
             )}
 
             {checkoutStep === 3 && (
-              <div className="cart-step-panel">
-                <div className="cart-header-row">
-                  <h2>Select Payment Option</h2>
-                  <span className="order-secure-tag">🔒 100% Secure Checkout</span>
+              <div style={{ background: '#ffffff', borderRadius: '20px', border: '1px solid #e5e5ea', padding: '32px', boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '6px' }}>Select Payment Method</h3>
+                <p style={{ fontSize: '13.5px', color: '#6e6e73', marginBottom: '24px' }}>
+                  All transactions are secured with enterprise 256-bit encryption.
+                </p>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
+                  {['UPI', 'Credit / Debit Card', 'Net Banking', 'Cash on Delivery'].map((m) => (
+                    <label
+                      key={m}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '16px 20px',
+                        borderRadius: '14px',
+                        border: paymentMethod === m ? '2px solid #000000' : '1px solid #e5e5ea',
+                        background: paymentMethod === m ? '#f5f5f7' : '#ffffff',
+                        cursor: 'pointer',
+                        fontWeight: paymentMethod === m ? '600' : '400',
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="payment"
+                        checked={paymentMethod === m}
+                        onChange={() => setPaymentMethod(m)}
+                        style={{ accentColor: '#000000' }}
+                      />
+                      <span>{m}</span>
+                    </label>
+                  ))}
                 </div>
 
-                {/* Delivery Address Summary Recap */}
-                <div className="selected-address-recap">
-                  <div className="recap-header">
-                    <strong>Deliver to: {addressForm.fullName}</strong>
-                    <button className="change-btn" onClick={() => setCheckoutStep(2)}>Change</button>
-                  </div>
-                  <p className="recap-text">
-                    {addressForm.street}, {addressForm.landmark ? addressForm.landmark + ', ' : ''}{addressForm.city}, {addressForm.state} - {addressForm.pincode}
-                  </p>
-                  <span className="phone-line">📞 {addressForm.phone}</span>
-                </div>
-
-                {/* Payment Options */}
-                <div className="payment-options-list">
-                  <label className={`payment-card ${paymentMethod === 'UPI' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="UPI"
-                      checked={paymentMethod === 'UPI'}
-                      onChange={() => setPaymentMethod('UPI')}
-                    />
-                    <div className="payment-label-info">
-                      <strong>📱 UPI (Google Pay / PhonePe / Paytm / BHIM)</strong>
-                      <span className="muted">Instant verified payment with 0% extra fees</span>
-                    </div>
-                  </label>
-
-                  <label className={`payment-card ${paymentMethod === 'CARD' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="CARD"
-                      checked={paymentMethod === 'CARD'}
-                      onChange={() => setPaymentMethod('CARD')}
-                    />
-                    <div className="payment-label-info">
-                      <strong>💳 Credit / Debit Card (Visa, MasterCard, RuPay)</strong>
-                      <span className="muted">Bank offers and EMI available on select cards</span>
-                    </div>
-                  </label>
-
-                  <label className={`payment-card ${paymentMethod === 'COD' ? 'selected' : ''}`}>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="COD"
-                      checked={paymentMethod === 'COD'}
-                      onChange={() => setPaymentMethod('COD')}
-                    />
-                    <div className="payment-label-info">
-                      <strong>💵 Cash on Delivery (COD)</strong>
-                      <span className="muted">Pay safely in cash or digital scan when our delivery partner arrives</span>
-                    </div>
-                  </label>
-                </div>
-
-                {error && <div className="error-banner">{error}</div>}
-
-                <div className="cart-step-actions">
-                  <button className="btn btn-outline" onClick={() => setCheckoutStep(2)}>
-                    ← Back to Address
-                  </button>
-                  <button
-                    className="btn btn-primary btn-lg place-order-btn"
-                    disabled={submitting}
-                    onClick={handlePlaceOrder}
-                  >
-                    {submitting ? 'Confirming Order…' : `Confirm Order (${formatPrice(totalPrice)})`}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className="apple-checkout-btn"
+                  onClick={handlePlaceOrder}
+                  disabled={submitting}
+                >
+                  {submitting ? 'Placing Order…' : `Place Order • ${formatPrice(totalPrice)}`}
+                </button>
               </div>
             )}
           </div>
 
-          {/* Right Column: Flipkart / Amazon Style Price Summary Card */}
-          <div className="fk-cart-sidebar-col">
-            <div className="fk-price-details-card">
-              <h3 className="price-details-title">PRICE DETAILS</h3>
-              <hr className="divider" />
+          {/* Right Column: Order Summary Card */}
+          <div>
+            <div className="apple-summary-card">
+              <h2 className="apple-summary-title">Order Summary</h2>
 
-              <div className="price-row">
-                <span>Price ({cart.reduce((s, i) => s + i.quantity, 0)} items)</span>
+              <div className="apple-summary-row">
+                <span>Items Subtotal ({cart.reduce((s, i) => s + i.quantity, 0)})</span>
                 <span>{formatPrice(totalPrice)}</span>
               </div>
 
-              <div className="price-row">
-                <span>Delivery Charges</span>
-                <span className="free-text">FREE</span>
+              <div className="apple-summary-row">
+                <span>Estimated Shipping</span>
+                <span style={{ color: '#1d1d1f', fontWeight: '600' }}>FREE</span>
               </div>
 
-              <div className="price-row">
-                <span>Packaging & Platform Handling</span>
-                <span className="free-text">FREE</span>
+              <div className="apple-summary-row">
+                <span>Applicable GST / Taxes</span>
+                <span>Included</span>
               </div>
 
-              <div className="price-row">
-                <span>Direct Store Dispatches</span>
-                <span>{groupedByStore.length} Parcels</span>
+              <div className="apple-summary-row total-row">
+                <span>Total</span>
+                <span style={{ fontSize: '22px', color: '#1d1d1f' }}>{formatPrice(totalPrice)}</span>
               </div>
 
-              <hr className="divider" />
+              {checkoutStep === 1 && (
+                <button
+                  type="button"
+                  className="apple-checkout-btn"
+                  onClick={() => {
+                    if (!user) {
+                      navigate('/login')
+                    } else {
+                      setCheckoutStep(2)
+                    }
+                  }}
+                >
+                  Check Out ›
+                </button>
+              )}
 
-              <div className="price-total-row">
-                <strong>Total Amount Payable</strong>
-                <strong className="grand-total">{formatPrice(totalPrice)}</strong>
-              </div>
-
-              <div className="savings-highlight-banner">
-                <span>✓ You are saving on FREE express local delivery across Hyderabad!</span>
-              </div>
-
-              <div className="trust-badges-list">
-                <div className="trust-item">
-                  <span>🛡️</span>
-                  <div>
-                    <strong>100% Safe Payments</strong>
-                    <p>All major cards, UPI and COD accepted</p>
-                  </div>
-                </div>
-                <div className="trust-item">
-                  <span>🚚</span>
-                  <div>
-                    <strong>Express 3-4 Day Delivery</strong>
-                    <p>Direct from verified merchant warehouses</p>
-                  </div>
-                </div>
+              <div style={{ marginTop: '20px', fontSize: '12.5px', color: '#6e6e73', lineHeight: '1.6', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckIcon size={13} /> 100% genuine verified products
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckIcon size={13} /> 3-4 day express dispatch across Hyderabad
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckIcon size={13} /> Free 7-day hassle-free returns
+                </span>
               </div>
             </div>
           </div>

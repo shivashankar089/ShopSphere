@@ -3,15 +3,26 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext.jsx'
 import { useCurrency } from '../context/CurrencyContext.jsx'
 import BecomeSellerModal from './BecomeSellerModal.jsx'
+import {
+  LogoIcon,
+  SearchIcon,
+  BagIcon,
+  UserIcon,
+  LocationPinIcon,
+  OrderBoxIcon,
+  StoreIcon,
+  ShieldIcon,
+  SignOutIcon,
+  CloseIcon,
+} from './Icons.jsx'
 
 export default function Navbar({ searchQuery, setSearchQuery, selectedDistance, setSelectedDistance }) {
   const navigate = useNavigate()
   const { totalItems } = useCart()
-  const { country, setCountry, city, pincode, currency, setCity, setPincode } = useCurrency()
+  const { country, setCountry, city, pincode, setCity, setPincode } = useCurrency()
   const user = JSON.parse(localStorage.getItem('user') || 'null')
 
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [showLocationModal, setShowLocationModal] = useState(false)
   const [showSellerModal, setShowSellerModal] = useState(false)
 
@@ -37,231 +48,201 @@ export default function Navbar({ searchQuery, setSearchQuery, selectedDistance, 
     setShowLocationModal(false)
   }
 
-  const firstName = user?.name ? user.name.split(' ')[0].toUpperCase() : 'ACCOUNT'
+  const displayName = user?.name ? user.name.split(' ')[0] : 'Account'
 
   return (
     <>
-      <header className="fk-navbar">
-        <div className="fk-nav-container">
-          {/* Logo & Brand */}
-          <Link to="/home" className="fk-brand">
-            <div className="fk-logo-box">
-              <span className="fk-logo-s">S</span>
-            </div>
-            <div className="fk-brand-text">
-              <span className="fk-brand-name">ShopSphere</span>
-              <span className="fk-brand-tagline">Explore <em>Direct</em></span>
-            </div>
+      {/* Apple Style Announcement Ribbon */}
+      <div className="apple-announcement-ribbon">
+        <span>
+          Get up to ₹7,000 instant savings on eligible cards with 3-4 day express delivery across Hyderabad.{' '}
+          <Link to="/home" className="ribbon-link">Shop Store ›</Link>
+        </span>
+      </div>
+
+      {/* Apple Translucent Frosted Glass Navbar */}
+      <header className="apple-navbar">
+        <div className="apple-nav-container">
+          {/* Brand Logo & Name */}
+          <Link to="/home" className="apple-brand" title="ShopSphere Home">
+            <span className="apple-logo-icon">
+              <LogoIcon size={18} />
+            </span>
+            <span className="apple-brand-name">ShopSphere</span>
           </Link>
 
-          {/* Search Bar (Flipkart Style with 🔍 Icon) */}
-          <form className="fk-search-form" onSubmit={handleSearchSubmit}>
-            <button type="submit" className="fk-search-icon-btn" title="Search">
-              <span className="search-symbol">🔍</span>
-            </button>
+          {/* Search Pill */}
+          <form className="apple-search-form" onSubmit={handleSearchSubmit}>
+            <span className="apple-search-icon">
+              <SearchIcon size={15} />
+            </span>
             <input
               type="text"
-              placeholder="Search for Products, Brands and More"
+              placeholder="Search products, brands and stores"
               value={searchQuery || ''}
               onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
-              className="fk-search-input"
+              className="apple-search-input"
             />
           </form>
 
-          {/* Location Delivery Selector */}
-          <button
-            className="fk-loc-badge"
-            onClick={() => setShowLocationModal(true)}
-            title="Change Delivery Location"
-          >
-            <span className="loc-pin-icon">📍</span>
-            <div className="loc-info">
-              <span className="loc-title">Deliver to</span>
-              <span className="loc-val">{city} {pincode}</span>
-            </div>
-          </button>
-
-          {/* Currency / Country Switcher */}
-          <div className="fk-currency-toggle">
+          {/* Nav Controls */}
+          <div className="apple-nav-actions">
+            {/* Delivery Location Pill */}
             <button
-              type="button"
-              className={`curr-btn ${country === 'India' ? 'active' : ''}`}
-              onClick={() => setCountry('India')}
-              title="Set Currency to Indian Rupees (₹)"
+              className="apple-nav-loc-btn"
+              onClick={() => setShowLocationModal(true)}
+              title="Select Delivery Location"
             >
-              ₹ INR
+              <LocationPinIcon size={14} />
+              <span>Deliver to <strong>{city} {pincode}</strong></span>
             </button>
-            <button
-              type="button"
-              className={`curr-btn ${country === 'USA' ? 'active' : ''}`}
-              onClick={() => setCountry('USA')}
-              title="Set Currency to US Dollars ($)"
-            >
-              $ USD
-            </button>
-          </div>
 
-          {/* User Account Dropdown (Flipkart style with User's Name ONLY - NO "CUSTOMER" badge) */}
-          {user ? (
-            <div className="fk-dropdown-wrap">
+            {/* Currency Switcher Pill */}
+            <div className="apple-currency-toggle">
               <button
-                className="fk-account-btn"
-                onClick={() => {
-                  setShowUserMenu(!showUserMenu)
-                  setShowMoreMenu(false)
-                }}
-                aria-expanded={showUserMenu}
+                type="button"
+                className={`apple-curr-btn ${country === 'India' ? 'active' : ''}`}
+                onClick={() => setCountry('India')}
+                title="Indian Rupees (₹)"
               >
-                <span className="user-icon">👤</span>
-                <span className="user-name-label">{firstName}</span>
-                <span className="arrow-down">▾</span>
+                ₹ INR
               </button>
-
-              {showUserMenu && (
-                <div className="fk-dropdown-menu user-menu">
-                  <div className="fk-dropdown-header">
-                    <strong>{user.name}</strong>
-                    <span className="fk-user-email">{user.email}</span>
-                  </div>
-                  <hr className="fk-menu-divider" />
-
-                  <Link to="/orders" className="fk-menu-item" onClick={() => setShowUserMenu(false)}>
-                    <span>📦</span> My Orders
-                  </Link>
-
-                  {user.role !== 'SELLER' && (
-                    <button
-                      className="fk-menu-item highlight-item"
-                      onClick={() => {
-                        setShowUserMenu(false)
-                        setShowSellerModal(true)
-                      }}
-                    >
-                      <span>🏪</span> Become a Seller
-                    </button>
-                  )}
-
-                  {(user.role === 'SELLER' || user.role === 'ADMIN') && (
-                    <Link to="/seller" className="fk-menu-item seller-link" onClick={() => setShowUserMenu(false)}>
-                      <span>🏪</span> Seller Merchant Hub
-                    </Link>
-                  )}
-
-                  {user.role === 'ADMIN' && (
-                    <Link to="/admin" className="fk-menu-item admin-link" onClick={() => setShowUserMenu(false)}>
-                      <span>🛡️</span> Admin Portal
-                    </Link>
-                  )}
-
-                  <hr className="fk-menu-divider" />
-
-                  <button className="fk-menu-item logout-link" onClick={handleLogout}>
-                    <span>🚪</span> Sign Out
-                  </button>
-                </div>
-              )}
+              <button
+                type="button"
+                className={`apple-curr-btn ${country === 'USA' ? 'active' : ''}`}
+                onClick={() => setCountry('USA')}
+                title="US Dollars ($)"
+              >
+                $ USD
+              </button>
             </div>
-          ) : (
-            <div className="fk-auth-buttons">
-              <Link to="/login" className="fk-login-btn">Sign In</Link>
-            </div>
-          )}
 
-          {/* Flipkart Style 'More' Dropdown */}
-          <div className="fk-dropdown-wrap">
-            <button
-              className="fk-more-btn"
-              onClick={() => {
-                setShowMoreMenu(!showMoreMenu)
-                setShowUserMenu(false)
-              }}
-              aria-expanded={showMoreMenu}
-            >
-              <span>More</span>
-              <span className="arrow-down">▾</span>
-            </button>
-
-            {showMoreMenu && (
-              <div className="fk-dropdown-menu more-menu">
+            {/* Account Menu */}
+            {user ? (
+              <div className="apple-dropdown-wrap">
                 <button
-                  className="fk-menu-item"
-                  onClick={() => {
-                    setShowMoreMenu(false)
-                    setShowSellerModal(true)
-                  }}
+                  className="apple-account-btn"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  aria-expanded={showUserMenu}
                 >
-                  <span className="menu-ico">🏪</span> Become a Seller
+                  <UserIcon size={15} />
+                  <span>{displayName}</span>
+                  <span style={{ fontSize: '10px', color: '#86868b' }}>▾</span>
                 </button>
-                <div className="fk-menu-item">
-                  <span className="menu-ico">🔔</span> Notification Settings
-                </div>
-                <div className="fk-menu-item">
-                  <span className="menu-ico">🎧</span> 24x7 Customer Care
-                </div>
-                <div className="fk-menu-item">
-                  <span className="menu-ico">📈</span> Advertise on ShopSphere
-                </div>
+
+                {showUserMenu && (
+                  <div className="apple-dropdown-menu">
+                    <div className="apple-menu-header">
+                      <strong>{user.name}</strong>
+                      <span>{user.email}</span>
+                    </div>
+                    <hr className="apple-menu-divider" />
+
+                    <Link to="/orders" className="apple-menu-item" onClick={() => setShowUserMenu(false)}>
+                      <OrderBoxIcon size={15} /> Order History
+                    </Link>
+
+                    {user.role !== 'SELLER' && (
+                      <button
+                        className="apple-menu-item highlight-item"
+                        onClick={() => {
+                          setShowUserMenu(false)
+                          setShowSellerModal(true)
+                        }}
+                      >
+                        <StoreIcon size={15} /> Merchant Business Hub
+                      </button>
+                    )}
+
+                    {(user.role === 'SELLER' || user.role === 'ADMIN') && (
+                      <Link to="/seller" className="apple-menu-item" onClick={() => setShowUserMenu(false)}>
+                        <StoreIcon size={15} /> Merchant Dashboard
+                      </Link>
+                    )}
+
+                    {user.role === 'ADMIN' && (
+                      <Link to="/admin" className="apple-menu-item" onClick={() => setShowUserMenu(false)}>
+                        <ShieldIcon size={15} /> Platform Governance
+                      </Link>
+                    )}
+
+                    <hr className="apple-menu-divider" />
+
+                    <button className="apple-menu-item logout-link" onClick={handleLogout}>
+                      <SignOutIcon size={15} /> Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Link to="/login" className="apple-btn-pill apple-btn-pill-secondary apple-btn-pill-sm">
+                  Sign In
+                </Link>
               </div>
             )}
-          </div>
 
-          {/* Flipkart Style Cart Button (with 🛒 Cart icon and Badge) */}
-          <Link to="/cart" className="fk-cart-btn" aria-label="Shopping Cart">
-            <div className="fk-cart-icon-wrap">
-              <span className="fk-cart-emoji">🛒</span>
-              {totalItems > 0 && <span className="fk-cart-badge">{totalItems}</span>}
-            </div>
-            <span className="fk-cart-text">Cart</span>
-          </Link>
+            {/* Cart Bag */}
+            <Link to="/cart" className="apple-cart-btn" aria-label="Shopping Bag">
+              <span className="apple-bag-icon">
+                <BagIcon size={17} />
+              </span>
+              {totalItems > 0 && <span className="apple-cart-badge">{totalItems}</span>}
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* Location Modal */}
       {showLocationModal && (
         <div className="modal-backdrop" onClick={() => setShowLocationModal(false)}>
-          <div className="location-modal-card" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Select Delivery Location</h3>
-              <button className="modal-close-btn" onClick={() => setShowLocationModal(false)}>✕</button>
+          <div className="product-modal-card" style={{ maxWidth: '480px', padding: '32px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-brand-row">
+              <span className="modal-brand">Delivery Location</span>
+              <button className="modal-close-btn" onClick={() => setShowLocationModal(false)} aria-label="Close">
+                <CloseIcon size={12} />
+              </button>
             </div>
-            <form onSubmit={handleSaveLocation} className="location-edit-form">
-              <p className="muted">
-                ShopSphere delivers to all zones across Greater Hyderabad & Cyberabad Metro with express 3-4 day delivery.
-              </p>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>Select Delivery Zone</h3>
+            <p style={{ fontSize: '13.5px', color: '#6e6e73', marginBottom: '20px' }}>
+              ShopSphere delivers to all zones across Greater Hyderabad & Cyberabad Metro with express 3-4 day dispatch.
+            </p>
 
-              <div className="form-group">
-                <label>City / Zone</label>
+            <form onSubmit={handleSaveLocation}>
+              <div className="apple-form-group">
+                <label className="apple-form-label">City / Operating Zone</label>
                 <select
                   value={tempCity}
                   onChange={(e) => setTempCity(e.target.value)}
-                  className="location-select"
+                  className="apple-form-select"
                 >
                   <option value="Hyderabad">Hyderabad (All Zones)</option>
-                  <option value="Secunderabad">Secunderabad</option>
                   <option value="Hitec City, Hyderabad">Hitec City / Madhapur</option>
                   <option value="Gachibowli, Hyderabad">Gachibowli / Financial Dist</option>
                   <option value="Banjara Hills, Hyderabad">Banjara Hills / Jubilee Hills</option>
+                  <option value="Secunderabad">Secunderabad</option>
                   <option value="Kukatpally, Hyderabad">Kukatpally / Miyapur</option>
                 </select>
               </div>
 
-              <div className="form-group">
-                <label>Pincode</label>
+              <div className="apple-form-group">
+                <label className="apple-form-label">PIN Code</label>
                 <input
                   type="text"
                   value={tempPin}
                   onChange={(e) => setTempPin(e.target.value)}
+                  className="apple-form-input"
                   placeholder="500081"
                   required
                 />
               </div>
 
-              <div className="modal-actions-row">
-                <button type="button" className="btn btn-outline" onClick={() => setShowLocationModal(false)}>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+                <button type="button" className="apple-btn-pill apple-btn-pill-secondary" style={{ flex: 1 }} onClick={() => setShowLocationModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  Save Delivery Location
+                <button type="submit" className="apple-btn-pill apple-btn-pill-primary" style={{ flex: 1 }}>
+                  Save Location
                 </button>
               </div>
             </form>

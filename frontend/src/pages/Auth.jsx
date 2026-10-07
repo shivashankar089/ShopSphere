@@ -1,36 +1,60 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useCurrency } from '../context/CurrencyContext.jsx'
+import { LogoIcon } from '../components/Icons.jsx'
 import api from '../api.js'
 
 export default function Auth({ mode }) {
   const isRegister = mode === 'register'
   const navigate = useNavigate()
+  const location = useLocation()
   const { updateLocation } = useCurrency()
 
   const [form, setForm] = useState({
     name: '',
-    email: '',
+    email: location.state?.email || '',
     password: '',
+    confirmPassword: '',
     country: 'India',
     city: 'Hyderabad',
     pincode: '500081',
     phone: '',
   })
   const [error, setError] = useState('')
+  const [successNotice, setSuccessNotice] = useState(
+    location.state?.registeredSuccess
+      ? 'Account created successfully. Please sign in with your credentials.'
+      : ''
+  )
   const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (location.state?.registeredSuccess) {
+      setSuccessNotice('Account created successfully. Please sign in with your credentials.')
+      if (location.state.email) {
+        setForm((prev) => ({ ...prev, email: location.state.email }))
+      }
+    }
+  }, [location.state])
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value })
 
   async function submit(e) {
     if (e) e.preventDefault()
     setError('')
+    setSuccessNotice('')
+
+    if (isRegister && form.confirmPassword && form.password !== form.confirmPassword) {
+      setError('Passwords do not match. Please verify.')
+      return
+    }
+
     setBusy(true)
 
     try {
       if (isRegister) {
-        // Registering creates a standard customer account first
-        const { data } = await api.post('/auth/register', {
+        // Register customer account in backend
+        await api.post('/auth/register', {
           name: form.name.trim(),
           email: form.email.trim(),
           password: form.password,
@@ -41,12 +65,15 @@ export default function Auth({ mode }) {
           role: 'CUSTOMER',
         })
 
-        localStorage.setItem('token', data.token)
-        localStorage.setItem('user', JSON.stringify(data))
-        updateLocation(data.country || 'India', data.city || 'Hyderabad', data.pincode || '500081')
-        navigate('/home')
+        // CRITICAL FIX: After registration, ALWAYS redirect directly to Login page with notification
+        navigate('/login', {
+          state: {
+            registeredSuccess: true,
+            email: form.email.trim(),
+          },
+        })
       } else {
-        // Single unified login form for all roles (Customer, Seller, Admin)
+        // Sign in flow for Customer, Merchant / Seller, and Platform Admin
         const { data } = await api.post('/auth/login', {
           email: form.email.trim(),
           password: form.password,
@@ -56,7 +83,7 @@ export default function Auth({ mode }) {
         localStorage.setItem('user', JSON.stringify(data))
         updateLocation(data.country || 'India', data.city || 'Hyderabad', data.pincode || '500081')
 
-        // Automatically route based on authenticated role
+        // Route based on authenticated role
         if (data.role === 'SELLER') {
           navigate('/seller')
         } else if (data.role === 'ADMIN') {
@@ -73,169 +100,178 @@ export default function Auth({ mode }) {
   }
 
   return (
-    <div className="auth-split-layout">
-      {/* Left Panel - Dark Premium Brand Showcase (Inspired by QueueLess Campus reference) */}
-      <div className="auth-hero-panel">
-        <div className="auth-hero-content">
-          <Link to="/" className="auth-brand-logo">
-            <span className="brand-badge-box">S</span>
-            <span className="brand-name-light">ShopSphere</span>
+    <div className="apple-auth-page">
+      {/* Centered Account Card */}
+      <div className="apple-auth-container">
+        <div className="apple-auth-header">
+          <Link to="/" className="apple-auth-logo-box" title="Return to ShopSphere">
+            <LogoIcon size={24} />
           </Link>
 
-          <div className="auth-hero-headings">
-            <span className="auth-kicker">NEXT-GEN LOCAL & GLOBAL COMMERCE</span>
-            <h1>Less waiting.<br />More doing.</h1>
-            <p className="auth-hero-desc">
-              Access Hyderabad's verified merchant stores, split multi-vendor cart dispatches, and track real-time delivery timelines to your doorstep.
-            </p>
-          </div>
-
-          <div className="auth-feature-pills">
-            <div className="feature-pill-card">
-              <span className="pill-tag">LIVE</span>
-              <span className="pill-title">Store Dispatch</span>
-            </div>
-            <div className="feature-pill-card">
-              <span className="pill-tag">VERIFIED</span>
-              <span className="pill-title">100% Genuine</span>
-            </div>
-            <div className="feature-pill-card">
-              <span className="pill-tag">FAST</span>
-              <span className="pill-title">3-4 Day Delivery</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="auth-hero-footer">
-          <span>ShopSphere Commerce Platform © {new Date().getFullYear()}</span>
-          <span>Secured with Enterprise Encryption</span>
-        </div>
-      </div>
-
-      {/* Right Panel - Clean White Minimalist Form */}
-      <div className="auth-form-panel">
-        <div className="auth-form-card">
-          <div className="auth-card-header">
-            <span className="auth-section-tag">ACCOUNT ACCESS</span>
-            <h2>{isRegister ? 'Create your account' : 'Welcome back.'}</h2>
-            <p className="auth-subtext">
-              {isRegister
-                ? 'Sign up to shop from nearby stores or register as a merchant.'
-                : 'Sign in to continue to ShopSphere.'}
-            </p>
-          </div>
-
-          <form onSubmit={submit} className="auth-pure-form">
-            {isRegister && (
+          <h1 className="apple-auth-title">
+            {isRegister ? 'Create Your Account' : 'Sign In'}
+          </h1>
+          <p className="apple-auth-subtext">
+            {isRegister ? (
               <>
-                <div className="form-group">
-                  <label htmlFor="reg-name">Full name</label>
+                One account is all you need to access all ShopSphere merchant services.{' '}
+                <Link to="/login">Sign In ›</Link>
+              </>
+            ) : (
+              <>
+                Enter your credentials to continue to ShopSphere.{' '}
+                <Link to="/register">Create an account ›</Link>
+              </>
+            )}
+          </p>
+        </div>
+
+        {/* Success Alert Banner (Shown after registration redirect) */}
+        {successNotice && (
+          <div className="apple-alert-success">
+            {successNotice}
+          </div>
+        )}
+
+        {/* Error Alert Banner */}
+        {error && (
+          <div className="apple-alert-error">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={submit} className="apple-pure-form">
+          {isRegister && (
+            <>
+              <div className="apple-form-group">
+                <label className="apple-form-label" htmlFor="reg-name">Full name</label>
+                <input
+                  id="reg-name"
+                  type="text"
+                  className="apple-form-input"
+                  value={form.name}
+                  onChange={set('name')}
+                  required
+                  placeholder="First and last name"
+                  autoComplete="name"
+                />
+              </div>
+
+              <div className="apple-form-row-2">
+                <div className="apple-form-group">
+                  <label className="apple-form-label" htmlFor="reg-country">Country / Region</label>
+                  <select
+                    id="reg-country"
+                    className="apple-form-select"
+                    value={form.country}
+                    onChange={set('country')}
+                  >
+                    <option value="India">India</option>
+                    <option value="USA">United States</option>
+                    <option value="International">Other / Global</option>
+                  </select>
+                </div>
+
+                <div className="apple-form-group">
+                  <label className="apple-form-label" htmlFor="reg-city">City</label>
                   <input
-                    id="reg-name"
+                    id="reg-city"
                     type="text"
-                    value={form.name}
-                    onChange={set('name')}
+                    className="apple-form-input"
+                    value={form.city}
+                    onChange={set('city')}
                     required
-                    placeholder="e.g. Shivashankar"
-                    autoComplete="name"
+                    placeholder="e.g. Hyderabad"
+                  />
+                </div>
+              </div>
+
+              <div className="apple-form-row-2">
+                <div className="apple-form-group">
+                  <label className="apple-form-label" htmlFor="reg-pincode">PIN code</label>
+                  <input
+                    id="reg-pincode"
+                    type="text"
+                    className="apple-form-input"
+                    value={form.pincode}
+                    onChange={set('pincode')}
+                    required
+                    placeholder="500081"
                   />
                 </div>
 
-                <div className="form-row-2">
-                  <div className="form-group">
-                    <label htmlFor="reg-country">Country / Citizenship</label>
-                    <select
-                      id="reg-country"
-                      value={form.country}
-                      onChange={set('country')}
-                    >
-                      <option value="India">India (₹ INR)</option>
-                      <option value="USA">United States ($ USD)</option>
-                      <option value="International">Other / International</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="reg-city">City / Region</label>
-                    <input
-                      id="reg-city"
-                      type="text"
-                      value={form.city}
-                      onChange={set('city')}
-                      required
-                      placeholder="e.g. Hyderabad"
-                    />
-                  </div>
+                <div className="apple-form-group">
+                  <label className="apple-form-label" htmlFor="reg-phone">Phone number</label>
+                  <input
+                    id="reg-phone"
+                    type="tel"
+                    className="apple-form-input"
+                    value={form.phone}
+                    onChange={set('phone')}
+                    placeholder="+91 98490 12345"
+                  />
                 </div>
+              </div>
+            </>
+          )}
 
-                <div className="form-row-2">
-                  <div className="form-group">
-                    <label htmlFor="reg-pincode">PIN Code / Postal Code</label>
-                    <input
-                      id="reg-pincode"
-                      type="text"
-                      value={form.pincode}
-                      onChange={set('pincode')}
-                      required
-                      placeholder="e.g. 500081"
-                    />
-                  </div>
+          <div className="apple-form-group">
+            <label className="apple-form-label" htmlFor="auth-email">Email address</label>
+            <input
+              id="auth-email"
+              type="email"
+              className="apple-form-input"
+              value={form.email}
+              onChange={set('email')}
+              required
+              placeholder="name@example.com"
+              autoComplete="email"
+            />
+          </div>
 
-                  <div className="form-group">
-                    <label htmlFor="reg-phone">Phone Number</label>
-                    <input
-                      id="reg-phone"
-                      type="tel"
-                      value={form.phone}
-                      onChange={set('phone')}
-                      placeholder="+91 98490 12345"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
+          <div className="apple-form-group">
+            <label className="apple-form-label" htmlFor="auth-password">Password</label>
+            <input
+              id="auth-password"
+              type="password"
+              className="apple-form-input"
+              value={form.password}
+              onChange={set('password')}
+              minLength={6}
+              required
+              placeholder="Password"
+              autoComplete={isRegister ? 'new-password' : 'current-password'}
+            />
+          </div>
 
-            <div className="form-group">
-              <label htmlFor="auth-email">Email address</label>
+          {isRegister && (
+            <div className="apple-form-group">
+              <label className="apple-form-label" htmlFor="auth-confirm">Confirm password</label>
               <input
-                id="auth-email"
-                type="email"
-                value={form.email}
-                onChange={set('email')}
-                required
-                placeholder="you@shopsphere.com"
-                autoComplete="email"
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="auth-password">Password</label>
-              <input
-                id="auth-password"
+                id="auth-confirm"
                 type="password"
-                value={form.password}
-                onChange={set('password')}
+                className="apple-form-input"
+                value={form.confirmPassword}
+                onChange={set('confirmPassword')}
                 minLength={6}
                 required
-                placeholder="Enter your password"
-                autoComplete={isRegister ? 'new-password' : 'current-password'}
+                placeholder="Confirm password"
+                autoComplete="new-password"
               />
             </div>
+          )}
 
-            {error && <div className="auth-error-alert">{error}</div>}
+          <button type="submit" className="apple-auth-submit-btn" disabled={busy}>
+            {busy ? 'Authenticating…' : isRegister ? 'Continue' : 'Sign In'}
+          </button>
 
-            <button type="submit" className="auth-submit-btn" disabled={busy}>
-              {busy ? 'Verifying credentials…' : isRegister ? 'Create account →' : 'Sign in →'}
-            </button>
-
-            <div className="auth-bottom-switch">
-              <span>{isRegister ? 'Already have an account? ' : 'New to ShopSphere? '}</span>
-              <Link to={isRegister ? '/login' : '/register'} className="auth-switch-link">
-                {isRegister ? 'Sign in' : 'Create an account'}
-              </Link>
-            </div>
-          </form>
-        </div>
+          <div className="apple-auth-switch-footer">
+            <span>{isRegister ? 'Already have an account? ' : 'New to ShopSphere? '}</span>
+            <Link to={isRegister ? '/login' : '/register'}>
+              {isRegister ? 'Sign In' : 'Create yours now'}
+            </Link>
+          </div>
+        </form>
       </div>
     </div>
   )

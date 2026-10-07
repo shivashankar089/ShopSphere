@@ -4,17 +4,22 @@ import Navbar from '../components/Navbar.jsx'
 import ProductCard from '../components/ProductCard.jsx'
 import ProductModal from '../components/ProductModal.jsx'
 import StoreCard from '../components/StoreCard.jsx'
+import { CategoryIcon, LogoIcon, CloseIcon } from '../components/Icons.jsx'
 import { useCurrency } from '../context/CurrencyContext.jsx'
 import api from '../api.js'
 
-// Clean category definitions (Flipkart style with clean icons)
+// Clean Apple Store Category Ribbon Tabs with monochrome vector icons
 const CATEGORY_TABS = [
-  { id: null, label: 'For You', icon: '✦' },
-  { id: 1, label: 'Electronics', icon: '💻' },
-  { id: 3, label: 'Fashion', icon: '👔' },
-  { id: 4, label: 'Home & Kitchen', icon: '🏠' },
-  { id: 5, label: 'Beauty & Personal Care', icon: '✨' },
-  { id: 2, label: 'Groceries & Essentials', icon: '🛍️' },
+  { id: null, slug: 'all', label: 'All Products' },
+  { id: 1, slug: 'electronics', label: 'Electronics' },
+  { id: 6, slug: 'gaming', label: 'Gaming' },
+  { id: 2, slug: 'groceries', label: 'Groceries' },
+  { id: 7, slug: 'home-living', label: 'Home & Living' },
+  { id: 8, slug: 'health-fitness', label: 'Health & Fitness' },
+  { id: 9, slug: 'handmade-artisan', label: 'Handmade' },
+  { id: 10, slug: 'beauty-care', label: 'Beauty & Care' },
+  { id: 3, slug: 'fashion', label: 'Fashion' },
+  { id: 11, slug: 'books-stationery', label: 'Books & Stationery' },
 ]
 
 export default function Home() {
@@ -29,44 +34,9 @@ export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('all') // 'all', 'stores'
-  const [currentSlide, setCurrentSlide] = useState(0)
-
-  // Clean professional promotional banners (Flipkart style)
-  const promoBanners = [
-    {
-      id: 1,
-      badge: 'TOP OFFERS & DEALS',
-      title: 'Mega Electronics & Gadgets Fest',
-      subtitle: 'Up to 40% off on Noise-Canceling Audio, Keyboards & Laptops',
-      cta: 'Explore Deals',
-      category: 1,
-      bgGradient: 'linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%)',
-    },
-    {
-      id: 2,
-      badge: 'VERIFIED LOCAL STORES',
-      title: 'Direct Dispatch Across Hyderabad',
-      subtitle: 'Genuine products sourced from Banjara Hills, Jubilee Hills, and Hitec City',
-      cta: 'View Nearby Stores',
-      tab: 'stores',
-      bgGradient: 'linear-gradient(135deg, #065f46 0%, #0f172a 100%)',
-    },
-    {
-      id: 3,
-      badge: 'SELLER ONBOARDING',
-      title: 'Grow Your Business on ShopSphere',
-      subtitle: 'Join hundreds of merchants in Greater Hyderabad with instant verification',
-      cta: 'Become a Seller',
-      bgGradient: 'linear-gradient(135deg, #431407 0%, #0f172a 100%)',
-    },
-  ]
 
   useEffect(() => {
     fetchInitialData()
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % promoBanners.length)
-    }, 6000)
-    return () => clearInterval(timer)
   }, [])
 
   useEffect(() => {
@@ -117,9 +87,43 @@ export default function Home() {
     return 0
   })
 
+  // Apple Store Latest Feature Cards (Featured Showcase)
+  const featuredShowcase = [
+    {
+      id: 1,
+      type: 'dark',
+      kicker: 'FLAGSHIP AUDIO',
+      heading: 'Sony WH-1000XM5',
+      desc: 'Industry-leading noise cancelation with 30-hour battery life and quick charge.',
+      priceText: 'From ₹26,990',
+      categorySlug: 'electronics',
+      productId: products.find((p) => p.name?.includes('Sony WH-1000XM5'))?.id,
+    },
+    {
+      id: 2,
+      type: 'light',
+      kicker: 'ORGANIC GOURMET',
+      heading: 'Artisanal Single-Origin Coffee & Matcha',
+      desc: 'Sourced from high altitude estates. Freshly roasted and delivered to your doorstep.',
+      priceText: 'From ₹899',
+      categorySlug: 'groceries',
+      productId: products.find((p) => p.name?.includes('Arabica Dark Roast'))?.id,
+    },
+    {
+      id: 3,
+      type: 'dark',
+      kicker: 'NEXT-GEN GAMING',
+      heading: 'PlayStation 5 & Mixed Reality',
+      desc: 'Experience lightning-fast SSD loading, ray tracing, and ultra-high FPS gameplay.',
+      priceText: 'From ₹31,990',
+      categorySlug: 'gaming',
+      productId: products.find((p) => p.name?.includes('PlayStation 5'))?.id,
+    },
+  ]
+
   return (
-    <div className="fk-page-wrapper">
-      {/* Top Navbar */}
+    <div className="apple-page-wrapper">
+      {/* Frosted Glass Navigation Bar */}
       <Navbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -127,196 +131,206 @@ export default function Home() {
         setSelectedDistance={setSelectedDistance}
       />
 
-      {/* Flipkart Style Clean Category Navigation Bar */}
-      <nav className="fk-category-nav" aria-label="Product categories">
-        <div className="fk-category-container">
+      {/* Apple Store Style Horizontal Category Ribbon */}
+      <nav className="apple-category-bar" aria-label="Store Categories">
+        <div className="apple-category-container">
           {CATEGORY_TABS.map((tab) => (
             <button
               key={tab.label}
-              className={`fk-cat-item ${selectedCategory === tab.id ? 'active' : ''}`}
+              className={`apple-cat-item ${selectedCategory === tab.id ? 'active' : ''}`}
               onClick={() => {
                 setSelectedCategory(tab.id)
                 setActiveTab('all')
               }}
             >
-              <span className="fk-cat-icon">{tab.icon}</span>
-              <span className="fk-cat-label">{tab.label}</span>
+              <span className="apple-cat-icon">
+                <CategoryIcon slug={tab.slug} size={20} />
+              </span>
+              <span className="apple-cat-label">{tab.label}</span>
             </button>
           ))}
         </div>
       </nav>
 
-      <main className="fk-main-body">
-        {/* Modern Promotional Hero Carousel Banner */}
-        <section className="fk-hero-carousel" style={{ background: promoBanners[currentSlide].bgGradient }}>
-          <div className="fk-carousel-content">
-            <span className="fk-carousel-badge">{promoBanners[currentSlide].badge}</span>
-            <h1 className="fk-carousel-title">{promoBanners[currentSlide].title}</h1>
-            <p className="fk-carousel-sub">{promoBanners[currentSlide].subtitle}</p>
-            <button
-              className="fk-carousel-cta"
-              onClick={() => {
-                if (promoBanners[currentSlide].tab) {
-                  setActiveTab(promoBanners[currentSlide].tab)
-                } else if (promoBanners[currentSlide].category) {
-                  setSelectedCategory(promoBanners[currentSlide].category)
-                }
-              }}
-            >
-              {promoBanners[currentSlide].cta} →
-            </button>
-          </div>
+      <main className="apple-main-content">
+        {/* Apple Store Big Title (Screenshot 2) */}
+        <header className="apple-store-hero-header">
+          <div className="apple-store-title-row">
+            <h1 className="apple-store-title">
+              Store. <span>The best way to buy the products you love.</span>
+            </h1>
 
-          <div className="fk-carousel-dots">
-            {promoBanners.map((b, idx) => (
-              <button
-                key={b.id}
-                className={`fk-dot ${currentSlide === idx ? 'active' : ''}`}
-                onClick={() => setCurrentSlide(idx)}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
+            <div className="apple-store-help-links">
+              <span style={{ color: '#6e6e73' }}>Direct fulfillment across {city}</span>
+              <Link to="/orders">Track active orders ›</Link>
+            </div>
           </div>
-        </section>
+        </header>
 
-        {/* Content Header & Filter Controls */}
-        <div className="fk-section-header-row">
-          <div className="fk-view-tabs">
+        {/* "The latest. Take a look at what's new" Section (Screenshot 2) */}
+        {!selectedCategory && !searchQuery && (
+          <section>
+            <h2 className="apple-section-headline">
+              The latest. <span>Take a look at what’s new.</span>
+            </h2>
+
+            <div className="apple-showcase-grid">
+              {featuredShowcase.map((card) => (
+                <div
+                  key={card.id}
+                  className={`apple-feature-card ${card.type === 'dark' ? 'dark-card' : 'light-card'}`}
+                  onClick={() => {
+                    const found = products.find((p) => p.id === card.productId)
+                    if (found) setSelectedProduct(found)
+                  }}
+                >
+                  <div>
+                    <span className="apple-card-kicker">{card.kicker}</span>
+                    <h3 className="apple-card-heading">{card.heading}</h3>
+                    <p className="apple-card-desc">{card.desc}</p>
+                  </div>
+
+                  <div>
+                    <div className="apple-card-price-tag">{card.priceText}</div>
+                    <div className="apple-card-bottom">
+                      <button
+                        type="button"
+                        className="apple-btn-pill apple-btn-pill-primary apple-btn-pill-sm"
+                      >
+                        Explore Product
+                      </button>
+                      <span className="apple-link-arrow">
+                        Learn more ›
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Filter and Sorting Toolbar */}
+        <div className="apple-filter-toolbar">
+          <div className="apple-toolbar-tabs">
             <button
-              className={`fk-view-tab ${activeTab === 'all' ? 'active' : ''}`}
+              className={`apple-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
               onClick={() => setActiveTab('all')}
             >
-              Suggested For You ({products.length})
+              All Products ({products.length})
             </button>
             <button
-              className={`fk-view-tab ${activeTab === 'stores' ? 'active' : ''}`}
+              className={`apple-tab-btn ${activeTab === 'stores' ? 'active' : ''}`}
               onClick={() => setActiveTab('stores')}
             >
               Verified Stores in {city} ({stores.length})
             </button>
           </div>
 
-          <div className="fk-sort-container">
-            <label htmlFor="fk-sort-select">Sort by:</label>
+          <div className="apple-sort-wrap">
+            <label htmlFor="apple-sort-select">Sort by:</label>
             <select
-              id="fk-sort-select"
+              id="apple-sort-select"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="fk-sort-select"
+              className="apple-sort-select"
             >
-              <option value="featured">Featured & Best Offers</option>
+              <option value="featured">Featured & Best Deals</option>
               <option value="price-low">Price: Low to High</option>
               <option value="price-high">Price: High to Low</option>
               <option value="rating">Customer Rating</option>
-              <option value="distance">Nearest Store</option>
+              <option value="distance">Nearest Merchant</option>
             </select>
           </div>
         </div>
 
-        {/* Active Filters Bar */}
+        {/* Active Filter Chips */}
         {(selectedCategory !== null || searchQuery) && (
-          <div className="fk-active-filters">
-            <span>Filtered by:</span>
+          <div className="apple-active-chips-row">
+            <span style={{ fontSize: '13px', color: '#6e6e73' }}>Filtered by:</span>
             {selectedCategory !== null && (
-              <span className="fk-filter-pill">
-                Category: {CATEGORY_TABS.find((c) => c.id === selectedCategory)?.label || 'Custom'}
-                <button onClick={() => setSelectedCategory(null)}>✕</button>
+              <span className="apple-filter-chip">
+                {CATEGORY_TABS.find((c) => c.id === selectedCategory)?.label || 'Category'}
+                <button onClick={() => setSelectedCategory(null)} title="Remove category filter" aria-label="Remove category filter">
+                  <CloseIcon size={11} />
+                </button>
               </span>
             )}
             {searchQuery && (
-              <span className="fk-filter-pill">
-                Search: "{searchQuery}"
-                <button onClick={() => setSearchQuery('')}>✕</button>
+              <span className="apple-filter-chip">
+                "{searchQuery}"
+                <button onClick={() => setSearchQuery('')} title="Clear search" aria-label="Clear search">
+                  <CloseIcon size={11} />
+                </button>
               </span>
             )}
             <button
-              className="fk-reset-btn"
+              className="apple-clear-all-link"
               onClick={() => {
                 setSelectedCategory(null)
                 setSearchQuery('')
               }}
             >
-              Reset Filters
+              Clear all
             </button>
           </div>
         )}
 
-        {/* Stores Tab View */}
+        {/* Stores Tab or Products Grid */}
         {activeTab === 'stores' ? (
-          <section className="fk-stores-section">
-            <div className="fk-sub-header">
-              <h2>Verified Hyderabad Merchant Stores</h2>
-              <p className="muted">Visit merchant shops to browse their direct warehouse catalog</p>
+          <section className="apple-stores-section">
+            <div className="apple-stores-header">
+              <div>
+                <h3>Authorized Merchant Stores in {city}</h3>
+                <p>Verified independent retailers fulfilling multi-vendor split orders</p>
+              </div>
             </div>
-            <div className="stores-grid">
+
+            <div className="apple-stores-grid">
               {stores.map((store) => (
                 <StoreCard key={store.id} store={store} />
               ))}
             </div>
           </section>
         ) : (
-          <>
-            {/* Main Products Grid */}
-            <section className="fk-products-section">
-              {loading ? (
-                <div className="fk-loading-card">
-                  <div className="spinner" />
-                  <p>Loading verified items from Hyderabad merchant catalog…</p>
+          <section>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#6e6e73' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px' }}>
+                  <LogoIcon size={32} />
                 </div>
-              ) : sortedProducts.length === 0 ? (
-                <div className="fk-empty-card">
-                  <h3>No items found matching your filter</h3>
-                  <p className="muted">Try adjusting your search terms or category selection.</p>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => {
-                      setSelectedCategory(null)
-                      setSearchQuery('')
-                    }}
-                  >
-                    View All Products
-                  </button>
-                </div>
-              ) : (
-                <div className="fk-products-grid">
-                  {sortedProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onSelectProduct={(p) => setSelectedProduct(p)}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Verified Merchant Stores Strip at Bottom */}
-            <section className="fk-merchant-strip-section">
-              <div className="fk-merchant-strip-header">
-                <div>
-                  <h3>Direct Hyderabad Merchant Stores</h3>
-                  <p className="muted">Authorized independent retailers fulfilling split orders</p>
-                </div>
-                <button className="fk-view-all-link" onClick={() => setActiveTab('stores')}>
-                  View all stores ({stores.length}) →
+                <p>Loading catalog from verified Hyderabad merchants…</p>
+              </div>
+            ) : sortedProducts.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', background: '#ffffff', borderRadius: '18px', border: '1px solid #e5e5ea' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>No matching products found</h3>
+                <p style={{ color: '#6e6e73', marginBottom: '20px' }}>Try resetting your category or search filter.</p>
+                <button
+                  className="apple-btn-pill apple-btn-pill-primary"
+                  onClick={() => {
+                    setSelectedCategory(null)
+                    setSearchQuery('')
+                  }}
+                >
+                  View All Products
                 </button>
               </div>
-
-              <div className="fk-merchant-chips-row">
-                {stores.map((store) => (
-                  <Link to={`/store/${store.id}`} key={store.id} className="fk-merchant-chip">
-                    <div className="chip-dist-badge">📍 {store.distanceKm} km</div>
-                    <h4>{store.name}</h4>
-                    <p className="chip-meta">★ {store.rating ? store.rating.toFixed(1) : '4.8'} • {store.city}</p>
-                  </Link>
+            ) : (
+              <div className="apple-products-grid">
+                {sortedProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onSelectProduct={(p) => setSelectedProduct(p)}
+                  />
                 ))}
               </div>
-            </section>
-          </>
+            )}
+          </section>
         )}
       </main>
 
-      {/* Product Detail Modal */}
+      {/* Product Detail Modal Dialog */}
       {selectedProduct && (
         <ProductModal
           product={selectedProduct}

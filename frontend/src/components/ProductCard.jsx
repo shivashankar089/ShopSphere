@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext.jsx'
 import { useCurrency } from '../context/CurrencyContext.jsx'
+import { StarIcon } from './Icons.jsx'
 
 export default function ProductCard({ product, onSelectProduct }) {
   const { addToCart, cart } = useCart()
-  const { formatPrice, currencySymbol } = useCurrency()
+  const { formatPrice } = useCurrency()
 
   const discountPercent =
     product.originalPrice > product.price
@@ -15,10 +16,10 @@ export default function ProductCard({ product, onSelectProduct }) {
   const qtyInCart = cartItem ? cartItem.quantity : 0
 
   return (
-    <article className="fk-product-card">
+    <article className="apple-product-card">
       {/* Product Image Clickable to Open Detail Modal */}
       <div
-        className="fk-image-container"
+        className="apple-card-image-box"
         onClick={() => onSelectProduct && onSelectProduct(product)}
         role="button"
         tabIndex={0}
@@ -27,80 +28,66 @@ export default function ProductCard({ product, onSelectProduct }) {
         <img
           src={product.imageUrl}
           alt={product.name}
-          className="fk-product-img"
+          className="apple-card-img"
           loading="lazy"
         />
         {discountPercent && (
-          <span className="fk-discount-badge">{discountPercent}% OFF</span>
+          <span className="apple-discount-pill">{discountPercent}% OFF</span>
         )}
-        <div className="fk-quick-view-overlay">
-          <span>Quick View</span>
-        </div>
       </div>
 
-      <div className="fk-card-body">
-        {/* Brand & Category */}
-        <div className="fk-meta-line">
-          <span className="fk-brand-tag">{product.brand || 'ShopSphere'}</span>
+      <div className="apple-card-info">
+        {/* Brand & Store Origin */}
+        <div className="apple-card-brand-row">
+          <span className="apple-card-brand-tag">{product.brand || 'ShopSphere'}</span>
           {product.store && (
             <Link
               to={`/store/${product.store.id}`}
-              className="fk-store-link"
+              className="apple-card-store-link"
               onClick={(e) => e.stopPropagation()}
               title={`Dispatched by ${product.store.name}`}
             >
-              {product.store.name} ({product.store.distanceKm} km)
+              {product.store.name} • {product.store.distanceKm} km
             </Link>
           )}
         </div>
 
         {/* Product Title */}
         <h3
-          className="fk-card-title"
+          className="apple-card-title"
           onClick={() => onSelectProduct && onSelectProduct(product)}
           title={product.name}
         >
           {product.name}
         </h3>
 
-        {/* Rating Badge (Flipkart Green Style) */}
-        <div className="fk-rating-row">
-          <span className="fk-rating-badge">
-            {product.rating ? product.rating.toFixed(1) : '4.8'} ★
+        {/* Customer Rating */}
+        <div className="apple-card-rating-line">
+          <span className="apple-rating-stars" style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+            <StarIcon size={12} filled />
+            {product.rating ? product.rating.toFixed(1) : '4.8'}
           </span>
-          <span className="fk-rating-count">({product.reviewCount || 68})</span>
-          <span className="fk-assured-tag">✓ Verified Store</span>
+          <span>({product.reviewCount || 68} reviews)</span>
         </div>
 
-        {/* Pricing & Offers */}
-        <div className="fk-pricing-block">
-          <div className="fk-price-main-row">
-            <span className="fk-final-price">{formatPrice(product.price)}</span>
-            {product.originalPrice > product.price && (
-              <span className="fk-mrp-price">{formatPrice(product.originalPrice)}</span>
-            )}
-          </div>
-          <div className="fk-offer-subtext">
-            <span className="offer-highlight">{discountPercent ? `${discountPercent}% off` : 'Special deal'}</span>
-            <span className="bank-offer">with Bank Offer +</span>
-          </div>
+        {/* Pricing Block */}
+        <div className="apple-card-pricing">
+          <span className="apple-price-current">{formatPrice(product.price)}</span>
+          {product.originalPrice > product.price && (
+            <span className="apple-price-mrp">{formatPrice(product.originalPrice)}</span>
+          )}
         </div>
 
-        {/* Delivery Details */}
-        <div className="fk-delivery-line">
-          <span>Delivery in 3-4 days to Hyderabad</span>
-        </div>
-
-        {/* Add to Cart Actions */}
-        <div className="fk-action-row">
+        {/* Action Button */}
+        <div className="apple-card-actions">
           <button
             type="button"
-            className="fk-add-cart-btn"
+            className="apple-card-add-btn"
             onClick={() => addToCart(product, 1)}
             disabled={product.stock <= 0}
             aria-label={`Add ${product.name} to cart`}
           >
-            {product.stock <= 0 ? 'Out of Stock' : qtyInCart > 0 ? `In Cart (${qtyInCart}) +` : '+ Add to Cart'}
+            {product.stock <= 0 ? 'Out of Stock' : qtyInCart > 0 ? `In Bag (${qtyInCart}) +` : '+ Add to Bag'}
           </button>
         </div>
       </div>

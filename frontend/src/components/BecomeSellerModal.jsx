@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { CloseIcon, CheckIcon, ShieldIcon } from './Icons.jsx'
 import api from '../api.js'
 
 export default function BecomeSellerModal({ onClose, onSellerRegistered }) {
@@ -13,10 +14,10 @@ export default function BecomeSellerModal({ onClose, onSellerRegistered }) {
 
   const [form, setForm] = useState({
     storeName: user?.name ? `${user.name}'s Official Store` : '',
-    category: 'Electronics & Gadgets',
+    category: 'Electronics',
     gstin: '36AAAAA0000A1Z5',
     phone: user?.phone || '+91 98490 12345',
-    description: 'Specializing in verified authentic products with direct local warehouse dispatch.',
+    description: 'Specializing in verified authentic merchandise with direct local warehouse dispatch.',
     address: 'Road No. 36, Jubilee Hills',
     city: 'Hyderabad',
     pincode: '500033',
@@ -49,7 +50,6 @@ export default function BecomeSellerModal({ onClose, onSellerRegistered }) {
         category: form.category,
       })
 
-      // Update local storage user role
       if (user) {
         user.role = 'SELLER'
         localStorage.setItem('user', JSON.stringify(user))
@@ -58,7 +58,7 @@ export default function BecomeSellerModal({ onClose, onSellerRegistered }) {
       setSuccess(true)
       if (onSellerRegistered) onSellerRegistered(res.data)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit seller application. Please try again.')
+      setError(err.response?.data?.message || 'Failed to submit seller application.')
     } finally {
       setBusy(false)
     }
@@ -71,61 +71,52 @@ export default function BecomeSellerModal({ onClose, onSellerRegistered }) {
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="become-seller-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="seller-modal-header">
-          <div className="modal-title-wrap">
-            <span className="seller-kicker">SHOPPHERE SELLER HUB</span>
-            <h2>Register as a Verified Merchant</h2>
-            <p className="muted">
-              Expand your business to thousands of customers in Hyderabad with split parcels & direct store dispatch.
+      <div className="product-modal-card" style={{ maxWidth: '640px', padding: '36px' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+          <div>
+            <span style={{ fontSize: '11px', fontWeight: '700', color: '#1d1d1f', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              MERCHANT BUSINESS REGISTRATION
+            </span>
+            <h2 style={{ fontSize: '24px', fontWeight: '700', letterSpacing: '-0.025em', color: '#1d1d1f', margin: '4px 0 6px' }}>
+              Register as a Merchant
+            </h2>
+            <p style={{ fontSize: '13.5px', color: '#6e6e73' }}>
+              Onboard your Hyderabad retail store to reach thousands of customers with direct warehouse fulfillment.
             </p>
           </div>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">✕</button>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close">
+            <CloseIcon size={12} />
+          </button>
         </div>
 
-        {/* Step Indicator */}
-        {!success && (
-          <div className="seller-steps-bar">
-            <div className={`step-item ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
-              <div className="step-num">{step > 1 ? '✓' : '1'}</div>
-              <span>Store Details</span>
-            </div>
-            <div className="step-line" />
-            <div className={`step-item ${step >= 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`}>
-              <div className="step-num">{step > 2 ? '✓' : '2'}</div>
-              <span>Location & Dispatch</span>
-            </div>
-            <div className="step-line" />
-            <div className={`step-item ${step >= 3 ? 'active' : ''}`}>
-              <div className="step-num">3</div>
-              <span>Verification & Payout</span>
-            </div>
+        {error && (
+          <div className="apple-alert-error" style={{ marginBottom: '20px' }}>
+            {error}
           </div>
         )}
 
-        {error && <div className="error-banner">{error}</div>}
-
         {success ? (
-          <div className="seller-success-card">
-            <div className="success-icon-badge">✓</div>
-            <h3>Seller Onboarding Application Submitted!</h3>
-            <p className="success-msg">
-              Congratulations <strong>{user?.name || 'Seller'}</strong>! Your store (<strong>{form.storeName}</strong>) has been registered. You now have instant access to your Seller Merchant Hub to manage inventory and view customer dispatches.
-            </p>
-            <div className="seller-success-actions">
-              <button className="btn btn-primary btn-lg" onClick={handleGoToSellerHub}>
-                Open Seller Merchant Hub →
-              </button>
+          <div style={{ textAlign: 'center', padding: '32px 16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '12px', color: '#1d1d1f' }}>
+              <CheckIcon size={44} />
             </div>
+            <h3 style={{ fontSize: '20px', fontWeight: '700', marginBottom: '8px' }}>Merchant Application Submitted</h3>
+            <p style={{ fontSize: '14px', color: '#6e6e73', maxWidth: '440px', margin: '0 auto 24px', lineHeight: '1.45' }}>
+              Your store (<strong>{form.storeName}</strong>) has been registered. The Administrator will review and verify your license details.
+            </p>
+            <button className="apple-btn-pill apple-btn-pill-primary apple-btn-pill-lg" onClick={handleGoToSellerHub}>
+              Open Merchant Portal ›
+            </button>
           </div>
         ) : (
           <form onSubmit={step === 3 ? handleSubmit : (e) => { e.preventDefault(); setStep(step + 1) }}>
             {step === 1 && (
-              <div className="step-fields">
-                <div className="form-group">
-                  <label>Store / Business Name *</label>
+              <div>
+                <div className="apple-form-group">
+                  <label className="apple-form-label">Store / Business Name *</label>
                   <input
                     type="text"
+                    className="apple-form-input"
                     required
                     placeholder="e.g. Apex Tech & Electronics"
                     value={form.storeName}
@@ -133,22 +124,27 @@ export default function BecomeSellerModal({ onClose, onSellerRegistered }) {
                   />
                 </div>
 
-                <div className="form-row-2">
-                  <div className="form-group">
-                    <label>Primary Business Category *</label>
-                    <select value={form.category} onChange={updateField('category')}>
-                      <option value="Electronics & Gadgets">Electronics & Gadgets</option>
-                      <option value="Fashion & Apparel">Fashion & Apparel</option>
-                      <option value="Groceries & Essentials">Groceries & Essentials</option>
-                      <option value="Home & Kitchen">Home & Kitchen</option>
-                      <option value="Beauty & Personal Care">Beauty & Personal Care</option>
+                <div className="apple-form-row-2">
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">Primary Category *</label>
+                    <select className="apple-form-select" value={form.category} onChange={updateField('category')}>
+                      <option value="Electronics">Electronics & Computing</option>
+                      <option value="Gaming">Gaming & Consoles</option>
+                      <option value="Groceries">Groceries & Gourmet</option>
+                      <option value="Home & Living">Home & Living</option>
+                      <option value="Health & Fitness">Health & Fitness</option>
+                      <option value="Handmade & Artisan">Handmade & Artisan</option>
+                      <option value="Beauty & Care">Beauty & Personal Care</option>
+                      <option value="Fashion">Fashion & Apparel</option>
+                      <option value="Books & Stationery">Books & Stationery</option>
                     </select>
                   </div>
 
-                  <div className="form-group">
-                    <label>GSTIN / Business Tax ID *</label>
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">GSTIN / Business Tax ID *</label>
                     <input
                       type="text"
+                      className="apple-form-input"
                       required
                       placeholder="e.g. 36AAAAA0000A1Z5"
                       value={form.gstin}
@@ -157,33 +153,36 @@ export default function BecomeSellerModal({ onClose, onSellerRegistered }) {
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Store Description & Specialties</label>
+                <div className="apple-form-group">
+                  <label className="apple-form-label">Store Description</label>
                   <textarea
                     rows={2}
-                    placeholder="Describe the products you sell and your store highlights..."
+                    className="apple-form-input"
+                    style={{ height: 'auto', padding: '12px 16px' }}
+                    placeholder="Describe your retail catalog and specialties..."
                     value={form.description}
                     onChange={updateField('description')}
                   />
                 </div>
 
-                <div className="modal-actions-row">
-                  <button type="button" className="btn btn-outline" onClick={onClose}>
+                <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+                  <button type="button" className="apple-btn-pill apple-btn-pill-secondary" style={{ flex: 1 }} onClick={onClose}>
                     Cancel
                   </button>
-                  <button type="submit" className="btn btn-primary">
-                    Next: Location & Dispatch →
+                  <button type="submit" className="apple-btn-pill apple-btn-pill-primary" style={{ flex: 1 }}>
+                    Next: Location Details ›
                   </button>
                 </div>
               </div>
             )}
 
             {step === 2 && (
-              <div className="step-fields">
-                <div className="form-group">
-                  <label>Store / Warehouse Pickup Street Address *</label>
+              <div>
+                <div className="apple-form-group">
+                  <label className="apple-form-label">Warehouse / Store Street Address *</label>
                   <input
                     type="text"
+                    className="apple-form-input"
                     required
                     placeholder="e.g. Unit 402, Cyber Towers, Madhapur"
                     value={form.address}
@@ -191,43 +190,35 @@ export default function BecomeSellerModal({ onClose, onSellerRegistered }) {
                   />
                 </div>
 
-                <div className="form-row-3">
-                  <div className="form-group">
-                    <label>City / Service Zone *</label>
+                <div className="apple-form-row-2">
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">City / Zone</label>
                     <input
                       type="text"
+                      className="apple-form-input"
                       required
                       value={form.city}
                       onChange={updateField('city')}
                     />
                   </div>
-
-                  <div className="form-group">
-                    <label>PIN Code *</label>
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">PIN Code</label>
                     <input
                       type="text"
+                      className="apple-form-input"
                       required
                       placeholder="500081"
                       value={form.pincode}
                       onChange={updateField('pincode')}
                     />
                   </div>
-
-                  <div className="form-group">
-                    <label>Distance to Hub (km)</label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      value={form.distanceKm}
-                      onChange={updateField('distanceKm')}
-                    />
-                  </div>
                 </div>
 
-                <div className="form-group">
-                  <label>Merchant Contact Phone Number *</label>
+                <div className="apple-form-group">
+                  <label className="apple-form-label">Merchant Contact Phone *</label>
                   <input
                     type="tel"
+                    className="apple-form-input"
                     required
                     placeholder="+91 98490 12345"
                     value={form.phone}
@@ -235,69 +226,69 @@ export default function BecomeSellerModal({ onClose, onSellerRegistered }) {
                   />
                 </div>
 
-                <div className="modal-actions-row">
-                  <button type="button" className="btn btn-outline" onClick={() => setStep(1)}>
-                    ← Back
+                <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+                  <button type="button" className="apple-btn-pill apple-btn-pill-secondary" style={{ flex: 1 }} onClick={() => setStep(1)}>
+                    ‹ Back
                   </button>
-                  <button type="submit" className="btn btn-primary">
-                    Next: Payout & Compliance →
+                  <button type="submit" className="apple-btn-pill apple-btn-pill-primary" style={{ flex: 1 }}>
+                    Next: Verification & Compliance ›
                   </button>
                 </div>
               </div>
             )}
 
             {step === 3 && (
-              <div className="step-fields">
-                <div className="form-row-2">
-                  <div className="form-group">
-                    <label>Bank Account Number (For Payouts) *</label>
+              <div>
+                <div className="apple-form-row-2">
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">Bank Account Number *</label>
                     <input
                       type="text"
+                      className="apple-form-input"
                       required
-                      placeholder="e.g. 9182736450192"
                       value={form.bankAccountNumber}
                       onChange={updateField('bankAccountNumber')}
                     />
                   </div>
-
-                  <div className="form-group">
-                    <label>IFSC Code *</label>
+                  <div className="apple-form-group">
+                    <label className="apple-form-label">IFSC Code *</label>
                     <input
                       type="text"
+                      className="apple-form-input"
                       required
-                      placeholder="e.g. HDFC0001234"
                       value={form.ifscCode}
                       onChange={updateField('ifscCode')}
                     />
                   </div>
                 </div>
 
-                <div className="compliance-box">
-                  <h4>🛡️ Seller Quality & Anti-Malpractice Agreement</h4>
-                  <ul>
-                    <li>100% Genuine and authentic merchandise only. No counterfeit goods.</li>
-                    <li>Strict prohibition against illegal drugs, narcotics, prescription medicines, or contraband.</li>
-                    <li>All products are subject to automated safety scanning and Admin compliance verification.</li>
-                    <li>Commitment to dispatch orders within 24 hours of customer confirmation.</li>
+                <div style={{ background: '#fafafc', border: '1px solid #e5e5ea', borderRadius: '14px', padding: '18px', margin: '20px 0' }}>
+                  <h4 style={{ fontSize: '13.5px', fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <ShieldIcon size={16} /> Seller Quality & Compliance Standards
+                  </h4>
+                  <ul style={{ fontSize: '12.5px', color: '#6e6e73', paddingLeft: '18px', lineHeight: '1.5', marginBottom: '14px' }}>
+                    <li>100% genuine and authentic merchandise only.</li>
+                    <li>Strict prohibition against illegal or restricted substances.</li>
+                    <li>All products undergo automated safety scanning and Admin review.</li>
                   </ul>
-
-                  <label className="checkbox-label">
+                  <label style={{ display: 'flex', gap: '8px', alignItems: 'flex-start', fontSize: '12.5px', color: '#1d1d1f', cursor: 'pointer' }}>
                     <input
                       type="checkbox"
                       checked={form.termsAccepted}
                       onChange={(e) => setForm({ ...form, termsAccepted: e.target.checked })}
                       required
+                      style={{ marginTop: '2px', accentColor: '#1d1d1f' }}
                     />
-                    <span>I declare that all business details are accurate and agree to platform seller standards.</span>
+                    <span>I declare that all business information is authentic and agree to terms.</span>
                   </label>
                 </div>
 
-                <div className="modal-actions-row">
-                  <button type="button" className="btn btn-outline" onClick={() => setStep(2)}>
-                    ← Back
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button type="button" className="apple-btn-pill apple-btn-pill-secondary" style={{ flex: 1 }} onClick={() => setStep(2)}>
+                    ‹ Back
                   </button>
-                  <button type="submit" className="btn btn-primary" disabled={busy}>
-                    {busy ? 'Submitting Application…' : 'Submit & Become a Seller ✓'}
+                  <button type="submit" className="apple-btn-pill apple-btn-pill-primary" style={{ flex: 1 }} disabled={busy}>
+                    {busy ? 'Submitting Application…' : 'Submit Application'}
                   </button>
                 </div>
               </div>

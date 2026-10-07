@@ -12,6 +12,7 @@ com/shopsphere/backend/BackendApplication.class
 com/shopsphere/backend/security/JwtService.class
 com/shopsphere/backend/user/UserRepository.class
 com/shopsphere/backend/seller/SellerController$ProductRequest.class
+com/shopsphere/backend/config/DataSeeder$SeedItem.class
 com/shopsphere/backend/security/SecurityConfig.class
 com/shopsphere/backend/order/OrderRepository.class
 com/shopsphere/backend/config/GlobalExceptionHandler.class
