@@ -93,7 +93,17 @@ export default function Auth({ mode }) {
         }
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Authentication failed. Please check your credentials.')
+      if (!err.response) {
+        setError('Cannot connect to backend server at http://localhost:8080. Please ensure the backend is running.')
+      } else if (err.response.data?.message) {
+        setError(err.response.data.message)
+      } else if (err.response.status === 401) {
+        setError('Incorrect email or password. Please check your credentials.')
+      } else if (err.response.status === 403) {
+        setError('Access forbidden. Your account may be disabled or pending review.')
+      } else {
+        setError(`Server error (${err.response.status}). Please try again later.`)
+      }
     } finally {
       setBusy(false)
     }
@@ -258,6 +268,37 @@ export default function Auth({ mode }) {
                 placeholder="Confirm password"
                 autoComplete="new-password"
               />
+            </div>
+          )}
+
+          {!isRegister && (
+            <div style={{ marginTop: '4px', marginBottom: '14px', padding: '10px 14px', background: '#f5f5f7', borderRadius: '12px', border: '1px solid #e5e5ea' }}>
+              <div style={{ fontSize: '11px', fontWeight: '600', color: '#86868b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Fill Demo Credentials:
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, email: 'customer@shopsphere.com', password: 'Customer@123' }))}
+                  style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '980px', border: '1px solid #d2d2d7', background: '#fff', cursor: 'pointer', fontWeight: '500', color: '#1d1d1f' }}
+                >
+                  Customer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, email: 'seller@shopsphere.com', password: 'Seller@123' }))}
+                  style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '980px', border: '1px solid #d2d2d7', background: '#fff', cursor: 'pointer', fontWeight: '500', color: '#1d1d1f' }}
+                >
+                  Seller
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, email: 'admin@shopsphere.com', password: 'Admin@123' }))}
+                  style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '980px', border: '1px solid #d2d2d7', background: '#fff', cursor: 'pointer', fontWeight: '500', color: '#1d1d1f' }}
+                >
+                  Admin
+                </button>
+              </div>
             </div>
           )}
 
